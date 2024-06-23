@@ -1,8 +1,10 @@
 // deno-lint-ignore-file no-window
+// Load family members from localStorage when the document is ready
 document.addEventListener("DOMContentLoaded", loadMembers);
 
 const familyMembersDiv = document.getElementById("familyMembers");
 
+// Function to add a new family member
 // deno-lint-ignore no-unused-vars
 function addMember() {
   const name = document.getElementById("name").value;
@@ -21,12 +23,14 @@ function addMember() {
   }
 }
 
+// Save a family member to localStorage
 function saveMember(member) {
   const members = JSON.parse(localStorage.getItem("members")) || [];
   members.push(member);
   localStorage.setItem("members", JSON.stringify(members));
 }
 
+// Load family members from localStorage
 function loadMembers() {
   const members = JSON.parse(localStorage.getItem("members")) || [];
   // biome-ignore lint/complexity/noForEach: <explanation>
@@ -35,6 +39,7 @@ function loadMembers() {
   setInterval(checkReminders, 1000 * 60); // Check reminders every minute
 }
 
+// Render a family member's div
 function renderMember(member) {
   const memberDiv = document.createElement("div");
   memberDiv.className = `member ${member.isGreen ? "green" : "red"}`;
@@ -44,10 +49,12 @@ function renderMember(member) {
   memberDiv.dataset.lastCalled = member.lastCalled;
   memberDiv.dataset.isGreen = member.isGreen;
   memberDiv.onclick = (e) => handleMemberClick(e, memberDiv);
+  memberDiv.ontouchstart = (e) => handleMemberTouch(e, memberDiv); // Handle touch events
   memberDiv.oncontextmenu = (e) => removeMember(e, memberDiv);
   familyMembersDiv.appendChild(memberDiv);
 }
 
+// Handle member click event
 function handleMemberClick(event, memberDiv) {
   if (event.ctrlKey) {
     showPopup(event, memberDiv);
@@ -56,6 +63,14 @@ function handleMemberClick(event, memberDiv) {
   }
 }
 
+// Handle member touch event
+function handleMemberTouch(event, memberDiv) {
+  if (event.touches.length === 2) {
+    showPopup(event, memberDiv);
+  }
+}
+
+// Show a popup with reminder info
 function showPopup(_event, memberDiv) {
   const popup = document.createElement("div");
   popup.className = "popup";
@@ -81,6 +96,7 @@ function showPopup(_event, memberDiv) {
   }, 3000); // Remove the popup after 3 seconds
 }
 
+// Toggle the call status of a family member
 function toggleMember(memberDiv) {
   if (memberDiv.classList.contains("red")) {
     memberDiv.classList.remove("red");
@@ -95,6 +111,7 @@ function toggleMember(memberDiv) {
   updateLocalStorage(memberDiv);
 }
 
+// Update localStorage with the current state of a member
 function updateLocalStorage(memberDiv) {
   const members = JSON.parse(localStorage.getItem("members")) || [];
   const updatedMembers = members.map((member) => {
@@ -111,6 +128,7 @@ function updateLocalStorage(memberDiv) {
   localStorage.setItem("members", JSON.stringify(updatedMembers));
 }
 
+// Remove a family member
 function removeMember(event, memberDiv) {
   event.preventDefault(); // Prevent the default context menu from appearing
   const members = JSON.parse(localStorage.getItem("members")) || [];
@@ -121,6 +139,7 @@ function removeMember(event, memberDiv) {
   familyMembersDiv.removeChild(memberDiv);
 }
 
+// Check reminders and update member status
 function checkReminders() {
   const members = document.getElementsByClassName("member");
   const now = Date.now();
